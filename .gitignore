@@ -100,3 +100,5 @@ ENV/
 hooks/
 pylint.sh
 pylintrc
+
+.vscode/
