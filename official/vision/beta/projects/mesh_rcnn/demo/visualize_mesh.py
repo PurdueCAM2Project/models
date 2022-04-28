@@ -18,7 +18,7 @@ def create_voxels(grid_dims, batch_size, occupancy_locs):
     return voxels
 
 
-def visualize_mesh(verts, faces, verts_mask, faces_mask, smoothing = True):
+def visualize_mesh_o3d(verts, faces, verts_mask, faces_mask, smoothing = True):
 
     """Visualize meshes using Open3D
 
