@@ -17,6 +17,9 @@ import dataclasses
 
 from official.modeling import hyperparams  # type: ignore
 
+from official.vision.configs import common
+from official.vision.configs import decoders
+from official.core import config_definitions as cfg
 
 @dataclasses.dataclass
 class ZHead(hyperparams.Config):
@@ -55,3 +58,40 @@ class MeshLosses(hyperparams.Config):
   edge_weight: float = 0.1
   true_num_samples: int = 5000
   pred_num_samples: int = 5000
+
+#Parser and dataconfig from Mask-RCNN(Subject to change)
+@dataclasses.dataclass
+class Parser(hyperparams.Config):
+  num_channels: int = 3
+  match_threshold: float = 0.5
+  unmatched_threshold: float = 0.5
+  rpn_match_threshold: float = 0.7, 
+  rpn_unmatched_threshold: float = 0.3, 
+  rpn_batch_size_per_im: int = 256, 
+  rpn_fg_fraction: float = 0.5, 
+  aug_rand_hflip: bool = False, 
+  aug_scale_min: float = 1, 
+  aug_scale_max: int = 1, 
+  skip_crowd_during_training: bool = True, 
+  max_num_instances: int =100, 
+  max_num_verts: int = 108416, 
+  max_num_faces: int = 126748, 
+  max_num_voxels: int = 2097152, 
+  include_mask: bool = True, 
+  mask_crop_size: int = 112
+
+@dataclasses.dataclass
+class DataConfig(cfg.DataConfig):
+  """Input config for training."""
+  input_path: str = ''
+  global_batch_size: int = 0
+  is_training: bool = False
+  dtype: str = 'bfloat16'
+  decoder: common.DataDecoder = common.DataDecoder()
+  parser: Parser = Parser()
+  shuffle_buffer_size: int = 10000
+  file_type: str = 'tfrecord'
+  drop_remainder: bool = True
+  # Number of examples in the data set, it's used to create the annotation file.
+  num_examples: int = -1
+
