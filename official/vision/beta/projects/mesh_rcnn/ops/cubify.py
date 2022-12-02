@@ -81,7 +81,6 @@ def generate_3d_coords(x_max: int, y_max: int, z_max: int,
 
   if flatten_output:
     coords = tf.reshape(coords, shape=[-1, 3])
-
   return coords
 
 def cantor_encode_3d_coordinates(x: tf.Tensor)-> tf.Tensor:
@@ -136,6 +135,7 @@ def initialize_mesh(grid_dims: int, align: str) -> Tuple[tf.Tensor, tf.Tensor]:
   # Generate the vertex locations
   coords = generate_3d_coords(grid_dims, grid_dims, grid_dims, True)
   coords = tf.cast(coords, tf.float32)
+  # print(coords)
 
   # Apply alignment and normalize verts
   if align == 'center':
@@ -148,18 +148,25 @@ def initialize_mesh(grid_dims: int, align: str) -> Tuple[tf.Tensor, tf.Tensor]:
   else:
     verts = coords * 2.0 - 1.0
 
+  # print(verts)
+
   # Generate offsets for the unit cube verts for the grid
   offsets = generate_3d_coords(grid_dims-1, grid_dims-1, grid_dims-1)
   offsets = tf.expand_dims(offsets, axis=-2)
 
   # Create unit cubes for each cuboid
   cuboid_verts = tf.tile(UNIT_CUBOID_VERTS, multiples=[num_cuboids, 1])
+
   cuboid_verts = tf.reshape(
       cuboid_verts,
       shape=[grid_dims, grid_dims, grid_dims, NUM_VERTS_PER_CUBOID, 3])
 
+
   # Add the offsets so that each cube in the grid has the correct vertices
   cuboid_verts += offsets
+
+  # print(cuboid_verts)
+  # print(cuboid_verts.shape)
 
   # Map the vertices of each cuboid in the grid to the predefined coords
   cuboid_verts = tf.reshape(cuboid_verts, shape=[-1, 3])
@@ -168,9 +175,25 @@ def initialize_mesh(grid_dims: int, align: str) -> Tuple[tf.Tensor, tf.Tensor]:
   coords_hashed = cantor_encode_3d_coordinates(coords)
   cuboid_verts_hashed = cantor_encode_3d_coordinates(cuboid_verts)
 
+
+  # print(coords_hashed)
+  # print(coords_hashed.shape)
+
+
   cuboid_verts_hashed = tf.reshape(cuboid_verts_hashed, shape=[-1, 1, 1])
+
+  # print(cuboid_verts_hashed)
+  # print(cuboid_verts_hashed.shape)
+
   mask = tf.equal(coords_hashed, cuboid_verts_hashed)
+
+  # print(mask)
+  # print(mask.shape)
+
   cuboid_verts = tf.where(mask)[:, -1]
+
+  # print(cuboid_verts)
+  # print(cuboid_verts.shape)
 
   # cuboid_verts is a tensor with shape [num_cuboids, 8], where each entry
   # contains the indices of the 8 vertices in verts that belong to it
@@ -186,11 +209,21 @@ def initialize_mesh(grid_dims: int, align: str) -> Tuple[tf.Tensor, tf.Tensor]:
   cuboid_verts = tf.reshape(
       cuboid_verts, shape=[num_cuboids, NUM_VERTS_PER_CUBOID])
 
+  # print(cuboid_verts.shape)
+
   # Map each cuboids face's vertex indices to match the actual index of the
   # vertex in cuboid_verts
   cuboid_range = tf.expand_dims(
       tf.repeat(tf.range(num_cuboids), [NUM_FACES_PER_CUBOID]), -1)
+  
+  # print(cuboid_range)
+  # print(cuboid_range.shape)
+
   cuboid_face_indices = tf.tile(UNIT_CUBOID_FACES, multiples=[num_cuboids, 1])
+
+  # print(cuboid_face_indices)
+  # print(cuboid_face_indices.shape)
+
   cuboid_face_indices = tf.stack(
       [tf.concat(
           [cuboid_range, tf.expand_dims(cuboid_face_indices[:, 0], -1)], 1),
@@ -199,8 +232,17 @@ def initialize_mesh(grid_dims: int, align: str) -> Tuple[tf.Tensor, tf.Tensor]:
        tf.concat(
            [cuboid_range, tf.expand_dims(cuboid_face_indices[:, 2], -1)], 1)],
       axis=1)
+
+  # print(cuboid_face_indices)
+  # print(cuboid_face_indices.shape)
+
   faces = tf.gather_nd(cuboid_verts, cuboid_face_indices)
 
+  # print(verts)
+  # print(verts.shape)
+
+  # print(faces)
+  # print(faces.shape)
   return verts, faces
 
 def generate_face_bounds(voxels: tf.Tensor, axis: int):
@@ -309,7 +351,7 @@ def cubify(voxels: tf.Tensor,
   """
   shape = tf.shape(voxels)
   batch_size, depth, _, _ = shape[0], shape[1], shape[2], shape[3]
-
+  
   # Threshold the voxel occupancy prediction
   voxels = tf.cast(voxels > thresh, voxels.dtype)
 

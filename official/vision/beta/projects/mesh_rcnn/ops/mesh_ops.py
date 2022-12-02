@@ -139,16 +139,23 @@ def vert_align(feature_map: tf.Tensor,
 
     return tf.gather_nd(img, indices)
 
+  print('feature map is: ', feature_map)
+
   height = tf.shape(feature_map)[1]
   width = tf.shape(feature_map)[2]
 
   max_y = tf.cast(height - 1, dtype=tf.int32)
   max_x = tf.cast(width - 1, dtype=tf.int32)
 
+  print('verts shape: ', verts.shape)
+
   x, y = verts[..., 0], verts[..., 1]
 
   x = tf.cast(x, 'float32')
   y = tf.cast(y, 'float32')
+
+  print('x: ', x)
+  print('y: ', y)
 
   # Scale coordinates to feature_map dimensions
   if align_corners:
@@ -157,6 +164,9 @@ def vert_align(feature_map: tf.Tensor,
   else:
     x = ((x + 1.0) * tf.cast(max_x, dtype=tf.float32)) / 2.0
     y = ((y + 1.0) * tf.cast(max_y, dtype=tf.float32)) / 2.0
+
+  print('x: ', x)
+  print('y: ', y)
 
   # Grab 4 nearest points for each coordinate
   x0 = tf.cast(tf.floor(x), dtype=tf.int32)
@@ -192,6 +202,11 @@ def vert_align(feature_map: tf.Tensor,
   value_b = _get_pixel_value(feature_map, x0, y1)
   value_c = _get_pixel_value(feature_map, x1, y0)
   value_d = _get_pixel_value(feature_map, x1, y1)
+
+  print('x0', x0)
+  print('y0', y0)
+  print('value a', value_a)
+
 
   # add dimension for addition
   wa = tf.expand_dims(wa, axis=2)

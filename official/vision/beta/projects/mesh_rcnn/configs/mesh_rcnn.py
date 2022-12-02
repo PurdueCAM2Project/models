@@ -21,6 +21,7 @@ from official.vision.configs import common
 from official.vision.configs import decoders
 from official.core import config_definitions as cfg
 
+
 @dataclasses.dataclass
 class ZHead(hyperparams.Config):
     """Parameterization for the Mesh R-CNN Z Head."""

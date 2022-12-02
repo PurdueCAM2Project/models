@@ -4,6 +4,7 @@ from official.core import base_task
 from official.core import task_factory
 from official.vision.beta.projects.mesh_rcnn.configs import mesh_rcnn as exp_cfg
 from official.vision.beta.projects.mesh_rcnn.modeling import factory
+
 from official.vision.beta.projects.mesh_rcnn.dataloaders import meshrcnn_input
 import tensorflow as tf
 from typing import Any, Optional, List, Tuple, Mapping
@@ -20,6 +21,19 @@ class MeshRCNNTask(base_task.Task):
     loading/iterating over Datasets, initializing the model, calculating the loss,
     post-processing, and customized metrics with reduction.
     """
+
+
+import tensorflow as tf
+
+@task_factory.register_task_cls(exp_cfg.MeshRCNNTask)
+class MeshRCNNTask(base_task.Task):
+  """A single-replica view of training procedure.
+
+    MeshRCNN task provides artifacts for training/evalution procedures, including
+  loading/iterating over Datasets, initializing the model, calculating the loss,
+  post-processing, and customized metrics with reduction.
+  """
+  
     def __init__(self, params, logging_dir: Optional[str] = None):
         super().__init__(params, logging_dir)
         return
@@ -119,7 +133,6 @@ class MeshRCNNTask(base_task.Task):
 
     def train_step(self, inputs, model, optimizer, metrics=None):
         """Train Step.
-        Forward step and backwards propagate the model.
         Args:
         inputs: a dictionary of input tensors.
         model: the model, forward pass definition.
@@ -136,6 +149,7 @@ class MeshRCNNTask(base_task.Task):
         inputs: a dictionary of input tensors.
         model: the keras.Model.
         metrics: a nested structure of metrics objects.
+
         Returns:
         A dictionary of logs.
         """
@@ -161,3 +175,11 @@ class MeshRCNNTask(base_task.Task):
         """
         
         return
+
+     
+
+
+
+
+
+   
